@@ -14,8 +14,11 @@ const app = express();
 const RiotApiCalls = new riot_api();
 const PORT = 3000;
 
-app.locals.summoner_name = null;
+app.locals.name = null;
+app.locals.id = null;
 app.locals.error = null;
+app.locals.rank = null;
+app.locals.losses = 0;
 
 app.use(express.static('public'));
 app.use(body_parser.urlencoded({extended: true}));
@@ -28,25 +31,49 @@ app.get('/', function(req,res){
 
 app.post('/summoner-profile', function(req, res){
 
-    let url = RiotApiCalls.get_summonerv3(req.body.summoner_name);
+    let summonerProfile = null;
 
-    request(url, function(err, response, body){
+    request(RiotApiCalls.get_summonerv3(req.body.name), function(err, response, body){
         if(err){
 
-            res.render('index', {summoner:null, error: 'An error occured while searching this summoner name'})
+            res.render('index', {error: 'An error occured while searching this summoner name'});
 
         }else{
             let summonerV3 = JSON.parse(body);
             
-            let summonerProfile = {
-                summoner_name:summonerV3.name, 
-                summoner_id:summonerV3.accountId
+            summonerProfile = {
+                name:summonerV3.name, 
+                id:summonerV3.accountId,
+                rank:'',
+                losses:0
             };
 
-            res.render('summonerProfile', summonerProfile);
+            console.log(summonerProfile.id)
             
+            request(RiotApiCalls.get_leaguev3(summonerProfile.id), function(err, response, body){
+                if(err){
+                    res.render('index', {error: 'An error occured while searching this summoner name'});
+                }else{
+                    let leagueV3 = JSON.parse(body);
+                    summonerProfile.rank = leagueV3.rank;
+                    summonerProfile.losses = leagueV3.losses;
+                    console.log(leagueV3.rank);
+                    console.log(leagueV3.losses);
+
+                    
+                }
+               
+            });
         }
+        res.render('summonerProfile', summonerProfile);
+
     });
+
+
+    
+
+   
+
 });   
 
 
