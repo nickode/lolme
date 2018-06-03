@@ -8,7 +8,6 @@ const request = require('request');
 //in-house modules
 const riot_api = require('./lib/riot_api.js');
 
-
 //const
 const app = express();
 const RiotApiCalls = new riot_api();
@@ -29,7 +28,7 @@ app.get('/', function(req,res){
 });
 
 
-app.post('/summoner-profile', function(req, res){
+app.post('/', function(req, res){
 
     let summonerProfile = null;
 
@@ -47,33 +46,9 @@ app.post('/summoner-profile', function(req, res){
                 rank:'',
                 losses:0
             };
-
-            console.log(summonerProfile.id)
-            
-            request(RiotApiCalls.get_leaguev3(summonerProfile.id), function(err, response, body){
-                if(err){
-                    res.render('index', {error: 'An error occured while searching this summoner name'});
-                }else{
-                    let leagueV3 = JSON.parse(body);
-                    summonerProfile.rank = leagueV3.rank;
-                    summonerProfile.losses = leagueV3.losses;
-                    console.log(leagueV3.rank);
-                    console.log(leagueV3.losses);
-
-                    
-                }
-               
-            });
         }
         res.render('summonerProfile', summonerProfile);
-
     });
-
-
-    
-
-   
-
 });   
 
 
